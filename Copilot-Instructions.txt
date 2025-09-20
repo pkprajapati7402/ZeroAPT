@@ -1,0 +1,135 @@
+Task: Build a Gasless Wallet Layer POC on Aptos using Next.js + TailwindCSS
+
+Follow these steps:
+
+1. Project Setup (Next.js full-stack)
+
+Scaffold Next.js 14 project with TypeScript and TailwindCSS.
+
+Create folders:
+
+/pages
+  index.tsx          → Main dashboard
+  api/relay-intent.ts → Backend API route (relayer)
+/components
+  Header.tsx
+  ActionCard.tsx
+  WalletConnect.tsx
+  TransactionStatus.tsx
+/contracts
+  AptosGasless.move   → Move smart contract
+  abi.json            → Exported ABI for frontend/backend
+/lib
+  aptosClient.ts      → Aptos SDK client setup for backend
+  signature.ts        → Signature verification helper
+/styles
+  globals.css         → Tailwind setup
+
+
+Initialize Aptos SDK in /lib/aptosClient.ts for backend relayer.
+
+2. Move Smart Contract (core logic)
+
+Create a Move module in /contracts/AptosGasless.move with functions:
+
+mint_badge(user: address) → mint NFT to user.
+
+cast_vote(user: address, poll_id: u64, choice: u8) → record vote.
+
+transfer_token(user: address, recipient: address, amount: u64) → transfer token on behalf of user.
+
+Keep it minimal, deployable on Aptos Testnet.
+
+Export ABI (abi.json) for frontend/backend calls.
+
+3. Backend Relayer (Next.js API Route)
+
+Use API route: /pages/api/relay-intent.ts.
+
+Implement logic:
+
+Accept {payload, signature} via POST.
+
+Verify signature using ed25519 (tweetnacl or Aptos SDK).
+
+Validate nonce + expiry to prevent replay.
+
+Call Move contract on Aptos Testnet using relayer’s funded account.
+
+Track used nonces in memory / Redis.
+
+Optional: /pages/api/status.ts → return relayer balance + last 5 transactions.
+
+4. Frontend Dashboard (Next.js + Tailwind)
+
+Header component: “Gasless Wallet Layer – Aptos POC”.
+
+WalletConnect component: Connect Petra / Martian via @aptos-labs/wallet-adapter.
+
+ActionCard component for each action:
+
+“Mint Event Badge NFT”
+
+“Vote in Poll”
+
+“Transfer Test Token”
+
+Each card:
+
+Prepares payload {action, params, user, nonce, expiry}.
+
+Uses wallet signMessage → sends {payload, signature} to /api/relay-intent.
+
+TransactionStatus component: shows live updates:
+
+Intent signed
+
+Transaction submitted
+
+Transaction hash → link to Aptos Explorer
+
+Sidebar / Dashboard:
+
+User gas paid = 0
+
+Relayer paid gas
+
+5. Styling & Visuals
+
+TailwindCSS dark modern theme.
+
+Cards with rounded corners, shadows, subtle background gradient.
+
+NFT preview images for minted badges.
+
+Optional charts / counters for:
+
+Transactions relayed
+
+Gas saved
+
+6. Demo Readiness
+
+Ensure frontend shows transaction hash linked to Aptos Testnet Explorer.
+
+Fund relayer account with test APT.
+
+Test all actions with wallet holding 0 APT → prove gasless experience.
+
+7. Stretch Features (optional)
+
+Limit free gasless transactions per user (e.g., 3 max).
+
+Show “Gas Saved” counter for each user.
+
+Batch multiple signed intents into single relayer transaction.
+
+✅ Notes for Copilot
+
+Generate Next.js components in /components with props for actions & status updates.
+
+Backend logic should use Next.js API routes instead of separate Express server.
+
+Keep Move contract minimal for fast deployment on Testnet.
+
+Frontend must be modern, responsive, visually appealing using TailwindCSS.

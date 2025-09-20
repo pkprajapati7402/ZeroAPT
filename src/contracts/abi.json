@@ -1,0 +1,97 @@
+{
+  "address": "0x1",
+  "name": "gasless_wallet::AptosGasless",
+  "friends": [],
+  "exposed_functions": [
+    {
+      "name": "mint_badge",
+      "visibility": "public",
+      "is_entry": true,
+      "is_view": false,
+      "generic_type_params": [],
+      "params": ["&signer", "address"],
+      "return": []
+    },
+    {
+      "name": "cast_vote", 
+      "visibility": "public",
+      "is_entry": true,
+      "is_view": false,
+      "generic_type_params": [],
+      "params": ["&signer", "address", "u64", "u8"],
+      "return": []
+    },
+    {
+      "name": "transfer_token",
+      "visibility": "public", 
+      "is_entry": true,
+      "is_view": false,
+      "generic_type_params": [],
+      "params": ["&signer", "address", "address", "u64"],
+      "return": []
+    },
+    {
+      "name": "create_poll",
+      "visibility": "public",
+      "is_entry": true,
+      "is_view": false,
+      "generic_type_params": [],
+      "params": ["&signer", "0x1::string::String", "vector<0x1::string::String>"],
+      "return": []
+    },
+    {
+      "name": "get_user_votes",
+      "visibility": "public",
+      "is_entry": false,
+      "is_view": true,
+      "generic_type_params": [],
+      "params": ["address"],
+      "return": ["vector<gasless_wallet::AptosGasless::Vote>"]
+    },
+    {
+      "name": "get_token_balance",
+      "visibility": "public",
+      "is_entry": false,
+      "is_view": true,
+      "generic_type_params": [],
+      "params": ["address"],
+      "return": ["u64"]
+    },
+    {
+      "name": "get_polls",
+      "visibility": "public",
+      "is_entry": false,
+      "is_view": true,
+      "generic_type_params": [],
+      "params": [],
+      "return": ["vector<gasless_wallet::AptosGasless::Poll>"]
+    }
+  ],
+  "structs": [
+    {
+      "name": "Vote",
+      "is_native": false,
+      "abilities": ["store", "drop"],
+      "generic_type_params": [],
+      "fields": [
+        {"name": "poll_id", "type": "u64"},
+        {"name": "choice", "type": "u8"},
+        {"name": "timestamp", "type": "u64"}
+      ]
+    },
+    {
+      "name": "Poll",
+      "is_native": false,
+      "abilities": ["store", "drop"],
+      "generic_type_params": [],
+      "fields": [
+        {"name": "id", "type": "u64"},
+        {"name": "title", "type": "0x1::string::String"},
+        {"name": "options", "type": "vector<0x1::string::String>"},
+        {"name": "votes", "type": "vector<u64>"},
+        {"name": "created_at", "type": "u64"},
+        {"name": "active", "type": "bool"}
+      ]
+    }
+  ]
+}
