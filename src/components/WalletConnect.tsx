@@ -1,76 +1,55 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useWallet } from './WalletProvider';
 
-interface WalletConnectProps {
-  onWalletChange?: (connected: boolean, address?: string) => void;
-}
+const getWalletIcon = (walletName: string) => {
+  switch (walletName.toLowerCase()) {
+    case 'petra': return '🪨';
+    case 'martian': return '👽';
+    case 'pontem': return '🌊';
+    default: return '💼';
+  }
+};
 
-const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletChange }) => {
-  const [connected, setConnected] = useState(false);
-  const [address, setAddress] = useState('');
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  const handleConnect = async () => {
-    setIsConnecting(true);
+export default function WalletConnect() {
+  const { connected, account, connect, disconnect, wallet, wallets } = useWallet();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const handleConnect = async (walletName: string) => {
     try {
-      // Simulate wallet connection for demo purposes
-      // In a real implementation, this would use Petra or Martian wallet APIs
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const demoAddress = '0x1234567890abcdef1234567890abcdef12345678';
-      setConnected(true);
-      setAddress(demoAddress);
-      onWalletChange?.(true, demoAddress);
+      await connect(walletName);
+      setIsModalOpen(false);
     } catch (error) {
-      console.error('Connection error:', error);
-    } finally {
-      setIsConnecting(false);
+      console.error('Connection failed:', error);
     }
   };
 
-  const handleDisconnect = () => {
-    setConnected(false);
-    setAddress('');
-    onWalletChange?.(false);
-  };
-
-  const formatAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  if (connected && address) {
+  if (connected && account && wallet) {
     return (
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            <div>
-              <div className="text-white font-semibold">
-                Demo Wallet Connected
+      <div className="relative group">
+        <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-500"></div>
+        <div className="relative bg-black/40 backdrop-blur-xl border border-green-500/30 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-3xl">
+                {getWalletIcon(wallet.name)}
               </div>
-              <div className="text-gray-400 text-sm font-mono">
-                {formatAddress(address)}
+              <div>
+                <div className="text-green-400 font-semibold text-lg">
+                  {wallet.name} Connected
+                </div>
+                <div className="text-gray-300 text-sm font-mono">
+                  {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                </div>
               </div>
             </div>
-          </div>
-          
-          <button
-            onClick={handleDisconnect}
-            className="px-3 py-1 text-xs bg-red-900/50 hover:bg-red-900/70 text-red-200 border border-red-500/30 rounded-lg transition-colors"
-          >
-            Disconnect
-          </button>
-        </div>
-        
-        <div className="mt-3 pt-3 border-t border-gray-700">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-400">Gas Fees Paid:</span>
-            <span className="text-green-400 font-semibold">0 APT</span>
-          </div>
-          <div className="flex items-center justify-between text-xs mt-1">
-            <span className="text-gray-400">Transactions:</span>
-            <span className="text-blue-400 font-semibold">Gasless ⚡</span>
+            <button
+              onClick={disconnect}
+              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 rounded-xl transition-all duration-200 text-sm font-medium"
+            >
+              Disconnect
+            </button>
           </div>
         </div>
       </div>
@@ -78,42 +57,98 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletChange }) => {
   }
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 text-center">
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-white mb-2">
-          Connect Your Wallet
-        </h3>
-        <p className="text-gray-400 text-sm">
-          Connect to start using gasless transactions (Demo Mode)
-        </p>
+    <>
+      <div className="relative group">
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-500"></div>
+        <div className="relative bg-black/40 backdrop-blur-xl border border-violet-500/30 rounded-2xl p-6 hover:border-violet-400/40 transition-all duration-300">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="w-full flex items-center justify-center space-x-3 py-3 px-6 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-violet-500/25 transition-all duration-300 transform hover:scale-105"
+          >
+            <span className="text-xl">💼</span>
+            <span>Connect Wallet</span>
+          </button>
+        </div>
       </div>
-      
-      <button
-        onClick={handleConnect}
-        disabled={isConnecting}
-        className={`
-          w-full px-6 py-3 rounded-lg font-semibold transition-all duration-200
-          ${isConnecting
-            ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-            : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-purple-500/25'
-          }
-        `}
-      >
-        {isConnecting ? (
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-            <span>Connecting...</span>
-          </div>
-        ) : (
-          'Connect Demo Wallet'
-        )}
-      </button>
-      
-      <div className="mt-4 text-xs text-gray-500">
-        <p>Demo mode - simulates Petra/Martian wallet connection</p>
-      </div>
-    </div>
-  );
-};
 
-export default WalletConnect;
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          ></div>
+          
+          <div className="relative z-10 w-full max-w-md mx-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-600/30 to-purple-600/30 rounded-3xl blur-xl"></div>
+              <div className="relative bg-gray-900/90 backdrop-blur-xl border border-gray-700/50 rounded-3xl p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-white">Connect Wallet</h3>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-gray-400 hover:text-white text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {wallets
+                    .filter((w) => w.installed)
+                    .map((w) => (
+                      <button
+                        key={w.name}
+                        onClick={() => handleConnect(w.name)}
+                        className="w-full flex items-center space-x-4 p-4 bg-gray-900/30 hover:bg-gray-800/50 border border-gray-700/50 hover:border-gray-600/50 rounded-xl transition-all duration-200"
+                      >
+                        <div className="text-2xl">
+                          {getWalletIcon(w.name)}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-white font-semibold">{w.name}</div>
+                          <div className="text-gray-400 text-sm">Ready to connect</div>
+                        </div>
+                        <div className="text-gray-400">→</div>
+                      </button>
+                    ))}
+
+                  {wallets
+                    .filter((w) => !w.installed)
+                    .map((w) => (
+                      <div
+                        key={w.name}
+                        className="w-full flex items-center space-x-4 p-4 bg-gray-900/10 border border-gray-700/30 rounded-xl opacity-50"
+                      >
+                        <div className="text-2xl grayscale">
+                          {getWalletIcon(w.name)}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-gray-400 font-semibold">{w.name}</div>
+                          <div className="text-gray-500 text-sm">Not installed</div>
+                        </div>
+                        <button
+                          onClick={() => window.open(`https://chrome.google.com/webstore/search/${w.name.toLowerCase()}`, '_blank')}
+                          className="text-xs text-violet-400 hover:text-violet-300 px-3 py-1 border border-violet-500/30 rounded-lg transition-colors"
+                        >
+                          Install
+                        </button>
+                      </div>
+                    ))}
+                </div>
+
+                {wallets.filter(w => w.installed).length === 0 && (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 mb-4">No wallets detected</div>
+                    <p className="text-gray-500 text-sm">
+                      Please install a supported Aptos wallet extension
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

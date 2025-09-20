@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRelayerAccount, getAccountBalance } from '@/lib/aptosClient';
-
-// Store transaction history (use database in production)
-interface TransactionRecord {
-  hash: string;
-  action: string;
-  timestamp: number;
-  user: string;
-  success: boolean;
-}
-
-let transactionHistory: TransactionRecord[] = [];
+import { getTransactionHistory } from '@/lib/transactionHistory';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +8,7 @@ export async function GET(request: NextRequest) {
     const balance = await getAccountBalance(relayerAccount.accountAddress.toString());
 
     // Get last 5 transactions
+    const transactionHistory = getTransactionHistory();
     const recentTransactions = transactionHistory
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, 5);
@@ -51,13 +42,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-// Helper function to add transaction to history (called from relay-intent)
-export const addTransactionToHistory = (transaction: TransactionRecord) => {
-  transactionHistory.push(transaction);
-  
-  // Keep only last 100 transactions
-  if (transactionHistory.length > 100) {
-    transactionHistory = transactionHistory.slice(-100);
-  }
-};
